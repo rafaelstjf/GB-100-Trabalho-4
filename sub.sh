@@ -26,7 +26,7 @@ export I_MPI_PMI_LIBRARY=/usr/lib64/libpmi.so
 
 EXEC=${1}
 
-srun -n $SLURM_NTASKS $EXEC 6 8 2 
+srun -n $SLURM_NTASKS $EXEC 8 8 2 
 
 
 
