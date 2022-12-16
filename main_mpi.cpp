@@ -152,7 +152,7 @@ int main(int argc, char* argv[]){
     #pragma omp parallel shared(c)
     {
         #pragma omp for
-        for(jj = (myrank*((num_tiles/numprocs)*tile_size)); jj < (n/(2 - myrank)); jj+=(long)tile_size){
+        for(jj = (myrank*((num_tiles/numprocs)*tile_size)); jj < ((tile_size*num_tiles)/(2 - myrank)); jj+=(long)tile_size){
             for(i  = 0; i < m; i++){
                     for(j = jj; j < jj + (long)tile_size; j++){
                             #pragma omp atomic
@@ -164,12 +164,10 @@ int main(int argc, char* argv[]){
     for(i =0; i < m; i++)
         cout << "(" << myrank << ") my_c[" << i << "]: " << c_mpi[i] <<"\t";
     cout << endl;
-    /**
-	if(myrank == 0){
-        MPI_Reduce(&c_mpi, &c, m, MPI_LONG, MPI_SUM, 0, MPI_COMM_WORLD); 
+    MPI_Reduce(c_mpi, &c[0], m, MPI_LONG, MPI_SUM, 0, MPI_COMM_WORLD); 
+    if(myrank == 0){
         printElements(nullptr, nullptr, c, m, n);
     }
-    **/
     MPI_Finalize();
     return 0;
 }
