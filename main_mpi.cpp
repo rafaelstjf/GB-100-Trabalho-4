@@ -113,7 +113,7 @@ void printElements(long** matrix, long* vector, long *c, long m, long n){
         for(long i = 0; i < m; i++){
             cout << c[i] << "\t";
         }
-        cout << endl
+        cout << endl;
         cout << "----------------------------------" << endl;
     }
 }
