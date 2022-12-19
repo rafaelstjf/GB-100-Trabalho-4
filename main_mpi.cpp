@@ -56,8 +56,8 @@ long* create_matrix(long m, long n){
     long* matrix  = new long[m*n];
     for(long i = 0; i < m; i++){
         for(long j = 0; j < n; j++){
-            //matrix[i*n + j] = uniform(mt);
-            matrix[i*n + j] = 1;
+            matrix[i*n + j] = uniform(mt);
+            // matrix[i*n + j] = 1;
         }
     }
     return matrix;
@@ -73,8 +73,8 @@ long* create_vector(long m){
     uniform_int_distribution<long> uniform{0L,MAX_VALUE};
     long* vector = new long[m];
     for(long i = 0; i < m; i++){
-        //vector[i] = uniform(mt);
-        vector[i] = 1;
+        vector[i] = uniform(mt);
+        // vector[i] = 1;
     }
     return vector;
 
@@ -120,7 +120,7 @@ void printElements(long** matrix, long* vector, long *c, long m, long n){
 
 int main(int argc, char* argv[]){
     long m = 2000L, n = 2000L;
-    int tile_size=4, myrank, numprocs, num_tiles;
+    int myrank, numprocs, num_tiles;
     double ini = 0, end = 0;
     long* c = new long[m];
     long* c_mpi = new long[m];
@@ -129,17 +129,14 @@ int main(int argc, char* argv[]){
             c[i] = 0L;
             c_mpi[i] = 0L;
     }
-    if (argc > 3){
+    if (argc > 2){
         m = atol(argv[1]);
         n = atol(argv[2]);
-        tile_size = atoi(argv[3]);
     }
     else{
-        cerr << "Arguments needed (in order): \"number of lines\" \"number of columns\" \"tile size\"" << endl;
+        cerr << "Arguments needed (in order): \"number of lines\" \"number of columns\"" << endl;
         exit(-1);
     }
-    assert(n % tile_size == 0);
-    num_tiles = n / tile_size;
     long* vector  = create_vector(n);
     long* matrix = create_matrix(m, n);
     MPI_Aint extent;
@@ -185,9 +182,9 @@ int main(int argc, char* argv[]){
 
     MPI_Reduce(c_mpi, &c[0], m, MPI_LONG, MPI_SUM, 0, MPI_COMM_WORLD); 
     
-    if(myrank == 0){
-        printElements(nullptr, nullptr, c, m, n);
-    }
+    // if(myrank == 0){
+    //     printElements(nullptr, nullptr, c, m, n);
+    // }
     MPI_Finalize();
     return 0;
 }
