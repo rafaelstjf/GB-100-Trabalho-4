@@ -1,7 +1,7 @@
 #!/bin/bash
-#SBATCH --nodes=2                      #Numero de Nós
-#SBATCH --ntasks-per-node=1           #Numero de tarefas por Nó
-#SBATCH --ntasks=2                    #Numero total de tarefas MPI
+#SBATCH --nodes=1                      #Numero de Nós
+#SBATCH --ntasks-per-node=4           #Numero de tarefas por Nó
+#SBATCH --ntasks=4                    #Numero total de tarefas MPI
 #SBATCH -p cpu_dev                 #Fila (partition) a ser utilizada
 #SBATCH -J sdumont-mpi                 #Nome job
 #SBATCH --exclusive                    #Utilização exclusiva dos nós durante a execução do job
@@ -24,9 +24,10 @@
 source /scratch/app/modulos/intel-psxe-2017.1.043.sh
 export I_MPI_PMI_LIBRARY=/usr/lib64/libpmi.so
 
+export OMP_NUMTHREADS=2
 EXEC=${1}
 
-srun -n $SLURM_NTASKS $EXEC 8 8 2 
+time srun -n $SLURM_NTASKS $EXEC 80 80 2 
 
 
 

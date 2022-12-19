@@ -111,8 +111,9 @@ void printElements(long** matrix, long* vector, long *c, long m, long n){
         cout << "----------------------------------" << endl;
         cout << "Resulting vector: " << endl;
         for(long i = 0; i < m; i++){
-            cout << c[i] << endl;
+            cout << c[i] << "\t";
         }
+        cout << endl
         cout << "----------------------------------" << endl;
     }
 }
@@ -146,25 +147,44 @@ int main(int argc, char* argv[]){
     MPI_Comm_size(MPI_COMM_WORLD, &numprocs); 
     MPI_Comm_rank(MPI_COMM_WORLD, &myrank);
     MPI_Type_extent(MPI_LONG, &extent);
+    long upper_bound;
+    long lower_bound;
+    if(myrank==0){
+        upper_bound = m/numprocs;
+        lower_bound = 0;
+    }else if(myrank==1){
+        upper_bound = m;
+        lower_bound = m/numprocs;
+    }
+    // long upper_bound = (tile_size*num_tiles)/(2 - myrank);
+    // long lower_bound = myrank*((num_tiles/numprocs)*tile_size);
 
     if(myrank == 0)
         cout << "Experimento - Move branches out of loop" << endl;    
-    #pragma omp parallel shared(c)
+    #pragma omp parallel
     {
-        #pragma omp for
-        for(jj = (myrank*((num_tiles/numprocs)*tile_size)); jj < ((tile_size*num_tiles)/(2 - myrank)); jj+=(long)tile_size){
-            for(i  = 0; i < m; i++){
-                    for(j = jj; j < jj + (long)tile_size; j++){
-                            #pragma omp atomic
-                            c_mpi[i] += matrix[i*n + j]*vector[j];
-                    }
+        // long* c_local = new long[m];
+        // for(i =0; i < m; i++){
+        //     c_local[i] = 0L;
+        // }
+        #pragma omp for 
+        for(i  = lower_bound; i < upper_bound; i++){
+            for(j = 0; j < n; j++){
+                // c_local[i] += matrix[i*n + j]*vector[j];
+                c_mpi[i] += matrix[i*n + j]*vector[j];
             }
+            // #pragma omp atomic
+            // c_mpi[i] += c_local[i];
         }
+        
     }
-    for(i =0; i < m; i++)
-        cout << "(" << myrank << ") my_c[" << i << "]: " << c_mpi[i] <<"\t";
-    cout << endl;
+        
+    // for(i =0; i < m; i++)
+    //     cout << "(" << myrank << ") my_c[" << i << "]: " << c_mpi[i] <<"\t";
+    // cout << endl;
+
     MPI_Reduce(c_mpi, &c[0], m, MPI_LONG, MPI_SUM, 0, MPI_COMM_WORLD); 
+    
     if(myrank == 0){
         printElements(nullptr, nullptr, c, m, n);
     }

@@ -25,22 +25,30 @@ using namespace std;
 long* multiplyCacheBlocking(long* matrix, long* vector, long m, long n, int tile_size){
     assert(n % (long)tile_size == 0);
     long* c = new long[m];
-    #pragma omp parallel shared(c)
+    for(long i =0; i < m; i++){
+        c[i] = 0L;
+    }
+    #pragma omp parallel num_threads (2)
     {
+        long* c_local = new long[m];
         for(long i =0; i < m; i++){
-            c[i] = 0L;
+            c_local[i] = 0L;
         }
-        #pragma omp for
-        for(long jj = 0; jj < n; jj+=(long)tile_size){
-            for(long i  = 0; i < m; i++){
-                    for(long j = jj; j < jj + (long)tile_size; j++){
+        #pragma omp for{
+            for(long jj = 0; jj < n; jj+=(long)tile_size){
+                        for(long i  = 0; i < m; i++){
+                                for(long j = jj; j < jj + (long)tile_size; j++){
+                                        c_local[i] += matrix[i*n + j]*vector[j];
+                                        //cout << "c[" << i << "]: = " << "M[" << i << "][" << j << "]*b[" << j << "]" << endl;
+                                        //cout << c[i] << " = " << matrix[i][j] << " * " << vector[j] << endl;
+                                }
                             #pragma omp atomic
-                            c[i] += matrix[i*n + j]*vector[j];
-                            //cout << "c[" << i << "]: = " << "M[" << i << "][" << j << "]*b[" << j << "]" << endl;
-                            //cout << c[i] << " = " << matrix[i][j] << " * " << vector[j] << endl;
+                            c[i] += c_local[i];
+                        }
                     }
-            }
         }
+       
+        
     }
     return c;
 }
